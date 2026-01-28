@@ -14,16 +14,266 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          action: Database["public"]["Enums"]["action_type"]
+          created_at: string
+          description: string
+          entite_id: string | null
+          entite_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["action_type"]
+          created_at?: string
+          description: string
+          entite_id?: string | null
+          entite_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["action_type"]
+          created_at?: string
+          description?: string
+          entite_id?: string | null
+          entite_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      membres: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_inscription: string
+          est_actif: boolean
+          id: string
+          lieu_habitation: string | null
+          nom_complet: string
+          photo_url: string | null
+          service_id: string | null
+          statut_bapteme: Database["public"]["Enums"]["statut_bapteme"]
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_inscription?: string
+          est_actif?: boolean
+          id?: string
+          lieu_habitation?: string | null
+          nom_complet: string
+          photo_url?: string | null
+          service_id?: string | null
+          statut_bapteme?: Database["public"]["Enums"]["statut_bapteme"]
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_inscription?: string
+          est_actif?: boolean
+          id?: string
+          lieu_habitation?: string | null
+          nom_complet?: string
+          photo_url?: string | null
+          service_id?: string | null
+          statut_bapteme?: Database["public"]["Enums"]["statut_bapteme"]
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membres_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presences: {
+        Row: {
+          created_at: string
+          date_presence: string
+          est_present: boolean
+          id: string
+          marked_by: string | null
+          membre_id: string
+          service_id: string | null
+          type_activite: Database["public"]["Enums"]["type_activite"]
+        }
+        Insert: {
+          created_at?: string
+          date_presence: string
+          est_present?: boolean
+          id?: string
+          marked_by?: string | null
+          membre_id: string
+          service_id?: string | null
+          type_activite: Database["public"]["Enums"]["type_activite"]
+        }
+        Update: {
+          created_at?: string
+          date_presence?: string
+          est_present?: boolean
+          id?: string
+          marked_by?: string | null
+          membre_id?: string
+          service_id?: string | null
+          type_activite?: Database["public"]["Enums"]["type_activite"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presences_membre_id_fkey"
+            columns: ["membre_id"]
+            isOneToOne: false
+            referencedRelation: "membres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presences_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          code_acces: string | null
+          created_at: string
+          email: string | null
+          id: string
+          nom_complet: string
+          service_id: string | null
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          code_acces?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          nom_complet: string
+          service_id?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          code_acces?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          nom_complet?: string
+          service_id?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          couleur: string | null
+          created_at: string
+          description: string | null
+          id: string
+          nom: string
+          updated_at: string
+        }
+        Insert: {
+          couleur?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom: string
+          updated_at?: string
+        }
+        Update: {
+          couleur?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_service_id: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_berger: { Args: never; Returns: boolean }
+      is_responsable_of_service: {
+        Args: { _service_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      action_type:
+        | "connexion"
+        | "ajout_membre"
+        | "modification_membre"
+        | "suppression_membre"
+        | "marquage_presence"
+        | "creation_service"
+        | "modification_service"
+      app_role: "berger" | "responsable_service"
+      statut_bapteme: "baptise" | "non_baptise"
+      type_activite: "culte" | "reunion" | "activite_speciale"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +400,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      action_type: [
+        "connexion",
+        "ajout_membre",
+        "modification_membre",
+        "suppression_membre",
+        "marquage_presence",
+        "creation_service",
+        "modification_service",
+      ],
+      app_role: ["berger", "responsable_service"],
+      statut_bapteme: ["baptise", "non_baptise"],
+      type_activite: ["culte", "reunion", "activite_speciale"],
+    },
   },
 } as const
