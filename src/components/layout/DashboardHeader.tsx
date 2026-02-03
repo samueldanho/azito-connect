@@ -1,13 +1,39 @@
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export const DashboardHeader = ({ onMenuClick }: HeaderProps) => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const initials = user?.user_metadata?.nom_complet
+    ?.split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || user?.email?.slice(0, 2).toUpperCase() || "U";
+
+  const displayName = user?.user_metadata?.nom_complet || user?.email || "Utilisateur";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
@@ -38,18 +64,32 @@ export const DashboardHeader = ({ onMenuClick }: HeaderProps) => {
             <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
           </Button>
 
-          <div className="flex items-center gap-3 pl-3 border-l border-border">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-foreground">Pasteur Jean</p>
-              <p className="text-xs text-muted-foreground">Berger</p>
-            </div>
-            <Avatar className="w-10 h-10 border-2 border-primary/20">
-              <AvatarImage src="" />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                PJ
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-3 pl-3 border-l border-border cursor-pointer hover:opacity-80 transition-opacity">
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-foreground">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">Utilisateur</p>
+                </div>
+                <Avatar className="w-10 h-10 border-2 border-primary/20">
+                  <AvatarImage src="" />
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem className="text-muted-foreground text-xs">
+                {user?.email}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
+                Se déconnecter
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

@@ -50,7 +50,7 @@ const Index = () => {
               <span className="text-primary font-semibold text-sm">Connect</span>
             </div>
           </div>
-          <Button variant="golden" onClick={() => navigate("/login")}>
+          <Button variant="golden" onClick={() => navigate("/auth")}>
             Se connecter
           </Button>
         </div>
@@ -76,7 +76,7 @@ const Index = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="hero" size="xl" onClick={() => navigate("/login")}>
+            <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
               Commencer maintenant
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
@@ -169,7 +169,7 @@ const Index = () => {
           <Button
             variant="secondary"
             size="xl"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/auth")}
             className="shadow-lg"
           >
             Démarrer gratuitement
