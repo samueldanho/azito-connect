@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Check, X, Search, UserCheck, UserX, Save } from "lucide-react";
@@ -39,17 +39,25 @@ export const PresenceList = ({
 }: PresenceListProps) => {
   const [search, setSearch] = useState("");
   const [presenceState, setPresenceState] = useState<Record<string, boolean>>({});
+  const [lastContextKey, setLastContextKey] = useState("");
 
-  // Initialize presence state from existing presences
-  useMemo(() => {
-    const initial: Record<string, boolean> = {};
-    presences.forEach((p) => {
-      if (p.membre_id) {
-        initial[p.membre_id] = p.est_present;
-      }
-    });
-    setPresenceState(initial);
-  }, [presences]);
+  // Create a stable key for the current context (date + type + service)
+  const contextKey = `${format(date, "yyyy-MM-dd")}-${typeActivite}-${serviceFilter}`;
+
+  // Initialize presence state from existing presences when context changes or initial load
+  useEffect(() => {
+    // Only initialize when context changes
+    if (contextKey !== lastContextKey) {
+      const initial: Record<string, boolean> = {};
+      presences.forEach((p) => {
+        if (p.membre_id) {
+          initial[p.membre_id] = p.est_present;
+        }
+      });
+      setPresenceState(initial);
+      setLastContextKey(contextKey);
+    }
+  }, [presences, contextKey, lastContextKey]);
 
   // Filter members based on search and service
   const filteredMembers = useMemo(() => {
