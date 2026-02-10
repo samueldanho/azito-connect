@@ -12,6 +12,7 @@ import Members from "./pages/Members";
 import Presences from "./pages/Presences";
 import Services from "./pages/Services";
 import Statistics from "./pages/Statistics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Statistics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/parametres"
+              element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               }
             />
