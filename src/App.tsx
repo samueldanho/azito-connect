@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import Presences from "./pages/Presences";
 import Services from "./pages/Services";
+import Statistics from "./pages/Statistics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Services />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/statistiques"
+              element={
+                <ProtectedRoute>
+                  <Statistics />
                 </ProtectedRoute>
               }
             />
