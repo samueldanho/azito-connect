@@ -15,6 +15,7 @@ import Statistics from "./pages/Statistics";
 import Settings from "./pages/Settings";
 import Responsables from "./pages/Responsables";
 import Logs from "./pages/Logs";
+import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/inscription" element={<Register />} />
             <Route
               path="/dashboard"
               element={
