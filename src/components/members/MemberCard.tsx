@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Phone, MapPin, Edit2, Trash2, MoreVertical } from "lucide-react";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ interface MemberCardProps {
 }
 
 export const MemberCard = ({ member, onEdit, onDelete }: MemberCardProps) => {
+  const photoUrl = useSignedUrl(member.photo_url);
   const initials = member.nom_complet
     .split(" ")
     .map((n) => n[0])
@@ -40,7 +42,7 @@ export const MemberCard = ({ member, onEdit, onDelete }: MemberCardProps) => {
         <div className="flex items-start gap-4">
           {/* Avatar */}
           <Avatar className="h-14 w-14 border-2 border-primary/20">
-            <AvatarImage src={member.photo_url || undefined} alt={member.nom_complet} />
+            <AvatarImage src={photoUrl || undefined} alt={member.nom_complet} />
             <AvatarFallback className="bg-primary/10 text-primary font-medium">
               {initials}
             </AvatarFallback>

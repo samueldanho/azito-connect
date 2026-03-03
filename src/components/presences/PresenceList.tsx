@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Check, X, Search, UserCheck, UserX, Save } from "lucide-react";
@@ -13,6 +14,20 @@ import { cn } from "@/lib/utils";
 import { Member } from "@/hooks/useMembers";
 import { PresenceWithMember, TypeActivite, PresenceInsert } from "@/hooks/usePresences";
 import { Tables } from "@/integrations/supabase/types";
+
+// Helper component for signed URL avatars in lists
+const SignedAvatar = ({ photoUrl, name, className }: { photoUrl: string | null; name: string; className?: string }) => {
+  const resolvedUrl = useSignedUrl(photoUrl);
+  const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <Avatar className={className || "h-10 w-10"}>
+      <AvatarImage src={resolvedUrl || undefined} alt={name} />
+      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
+  );
+};
 
 interface PresenceListProps {
   members: Member[];
@@ -198,17 +213,7 @@ export const PresenceList = ({
                     onCheckedChange={() => togglePresence(member.id)}
                     className="data-[state=checked]:bg-success data-[state=checked]:border-success"
                   />
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={member.photo_url || undefined} alt={member.nom_complet} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                      {member.nom_complet
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <SignedAvatar photoUrl={member.photo_url} name={member.nom_complet} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{member.nom_complet}</p>
                     {service && (

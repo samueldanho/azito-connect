@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -59,6 +60,19 @@ interface MemberFormProps {
   onSubmit: (data: MemberInsert) => void;
   isLoading?: boolean;
 }
+
+// Helper component to display avatar with signed URL
+const MemberAvatar = ({ photoUrl, initials }: { photoUrl: string | null; initials: string }) => {
+  const resolvedUrl = useSignedUrl(photoUrl);
+  return (
+    <Avatar className="h-20 w-20 border-2 border-primary/20 group-hover:border-primary/50 transition-colors">
+      <AvatarImage src={resolvedUrl || undefined} />
+      <AvatarFallback className="bg-primary/10 text-primary text-xl">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
+  );
+};
 
 export const MemberForm = ({
   open,
@@ -131,11 +145,26 @@ export const MemberForm = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type and size
-    if (!file.type.startsWith("image/")) {
+    // Validate file extension
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+    const extMatch = file.name.match(/\.([^.]+)$/);
+    const ext = extMatch ? extMatch[1].toLowerCase() : null;
+
+    if (!ext || !allowedExtensions.includes(ext)) {
       toast({
         title: "Erreur",
-        description: "Veuillez sélectionner une image valide.",
+        description: "Format non autorisé. Utilisez : JPG, PNG, GIF, WEBP",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate MIME type
+    const allowedMimes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedMimes.includes(file.type)) {
+      toast({
+        title: "Erreur",
+        description: "Type de fichier non autorisé.",
         variant: "destructive",
       });
       return;
@@ -153,21 +182,18 @@ export const MemberForm = ({
     setUploadingPhoto(true);
 
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // Use crypto random for filename to prevent enumeration
+      const randomId = crypto.randomUUID();
+      const fileName = `${randomId}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("membres-photos")
-        .upload(filePath, file);
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from("membres-photos")
-        .getPublicUrl(filePath);
-
-      setPhotoUrl(urlData.publicUrl);
+      // Store only the file path, not the full URL
+      setPhotoUrl(fileName);
     } catch (error) {
       console.error("Upload error:", error);
       toast({
@@ -210,12 +236,7 @@ export const MemberForm = ({
           {/* Photo Upload */}
           <div className="flex justify-center">
             <label className="relative cursor-pointer group">
-              <Avatar className="h-20 w-20 border-2 border-primary/20 group-hover:border-primary/50 transition-colors">
-                <AvatarImage src={photoUrl || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <MemberAvatar photoUrl={photoUrl} initials={initials} />
               <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 shadow-md">
                 {uploadingPhoto ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
