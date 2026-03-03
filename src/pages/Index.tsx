@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChurchLogo } from "@/components/icons/ChurchLogo";
+import QRCodeShare from "@/components/shared/QRCodeShare";
 import { Users, BarChart3, Shield, Smartphone, ArrowRight, Check } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const inscriptionUrl = `${window.location.origin}/inscription`;
 
   const features = [
     {
@@ -83,6 +85,7 @@ const Index = () => {
             <Button variant="outline" size="lg" onClick={() => navigate("/inscription")}>
               S'inscrire comme membre
             </Button>
+            <QRCodeShare url={inscriptionUrl} />
           </div>
         </div>
       </section>
