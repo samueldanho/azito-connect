@@ -80,8 +80,8 @@ const Index = () => {
               Commencer maintenant
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            <Button variant="outline" size="lg">
-              En savoir plus
+            <Button variant="outline" size="lg" onClick={() => navigate("/inscription")}>
+              S'inscrire comme membre
             </Button>
           </div>
         </div>
