@@ -116,6 +116,22 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
+    // Notify all berger users
+    const { data: bergerRoles } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "berger");
+
+    if (bergerRoles && bergerRoles.length > 0) {
+      const notifications = bergerRoles.map((r: { user_id: string }) => ({
+        user_id: r.user_id,
+        title: "Nouveau membre inscrit",
+        message: `${nom_complet} s'est inscrit via le formulaire public.`,
+        metadata: { membre_id: data.id },
+      }));
+      await supabaseAdmin.from("notifications").insert(notifications);
+    }
+
     return new Response(JSON.stringify({ success: true, member: data }), {
       status: 201,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

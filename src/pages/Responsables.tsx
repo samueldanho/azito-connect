@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -16,12 +18,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { UserCog, Shield, ShieldOff, Layers, Mail, Phone } from "lucide-react";
+import { UserCog, Shield, ShieldOff, Layers, Mail, Phone, UserPlus, Trash2, Loader2 } from "lucide-react";
 
 const Responsables = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { responsables, isLoading, assignRole, removeRole, assignService } = useResponsables();
+  const { responsables, isLoading, assignRole, removeRole, assignService, createUser, deleteUser } = useResponsables();
 
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
@@ -39,6 +41,16 @@ const Responsables = () => {
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<{ userId: string; role: "berger" | "responsable_service"; name: string } | null>(null);
 
+  // Create user dialog
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newNomComplet, setNewNomComplet] = useState("");
+
+  // Delete user dialog
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
+
   const openAssignDialog = (user: typeof responsables[0]) => {
     setSelectedUser(user);
     setSelectedServiceId(user.service_id || "none");
@@ -48,26 +60,45 @@ const Responsables = () => {
   const handleAssignResponsable = () => {
     if (!selectedUser) return;
     const serviceId = selectedServiceId === "none" ? null : selectedServiceId;
-
-    // Assign service
     assignService.mutate({ userId: selectedUser.id, serviceId });
-
-    // Assign role if not already responsable
     if (!selectedUser.isResponsable) {
       assignRole.mutate({ userId: selectedUser.id, role: "responsable_service" });
     }
-
     setAssignDialogOpen(false);
   };
 
   const handleRemoveRole = () => {
     if (!removeTarget) return;
     removeRole.mutate({ userId: removeTarget.userId, role: removeTarget.role });
-    // Also clear service_id if removing responsable role
     if (removeTarget.role === "responsable_service") {
       assignService.mutate({ userId: removeTarget.userId, serviceId: null });
     }
     setRemoveConfirmOpen(false);
+  };
+
+  const handleCreateUser = () => {
+    if (!newEmail || !newPassword || !newNomComplet) return;
+    createUser.mutate(
+      { email: newEmail, password: newPassword, nom_complet: newNomComplet },
+      {
+        onSuccess: () => {
+          setCreateDialogOpen(false);
+          setNewEmail("");
+          setNewPassword("");
+          setNewNomComplet("");
+        },
+      }
+    );
+  };
+
+  const handleDeleteUser = () => {
+    if (!deleteTarget) return;
+    deleteUser.mutate(deleteTarget.userId, {
+      onSuccess: () => {
+        setDeleteConfirmOpen(false);
+        setDeleteTarget(null);
+      },
+    });
   };
 
   const currentResponsables = responsables.filter((r) => r.isResponsable || r.isBerger);
@@ -94,6 +125,10 @@ const Responsables = () => {
               <h1 className="font-display text-3xl text-foreground mb-1">Responsables</h1>
               <p className="text-muted-foreground text-sm">Gérez les rôles et les accès des responsables de service</p>
             </div>
+            <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Créer un utilisateur
+            </Button>
           </div>
 
           {isLoading ? (
@@ -125,19 +160,34 @@ const Responsables = () => {
                               {user.isResponsable && <Badge variant="secondary" className="text-xs">Responsable</Badge>}
                             </div>
                           </div>
-                          {user.isResponsable && !user.isBerger && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:bg-destructive/10"
-                              onClick={() => {
-                                setRemoveTarget({ userId: user.id, role: "responsable_service", name: user.nom_complet });
-                                setRemoveConfirmOpen(true);
-                              }}
-                            >
-                              <ShieldOff className="w-4 h-4" />
-                            </Button>
-                          )}
+                          <div className="flex gap-1">
+                            {user.isResponsable && !user.isBerger && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setRemoveTarget({ userId: user.id, role: "responsable_service", name: user.nom_complet });
+                                  setRemoveConfirmOpen(true);
+                                }}
+                              >
+                                <ShieldOff className="w-4 h-4" />
+                              </Button>
+                            )}
+                            {!user.isBerger && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:bg-destructive/10"
+                                onClick={() => {
+                                  setDeleteTarget({ userId: user.id, name: user.nom_complet });
+                                  setDeleteConfirmOpen(true);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
 
                         {user.email && (
@@ -190,7 +240,7 @@ const Responsables = () => {
                         <tr className="border-b border-border text-muted-foreground bg-muted/30">
                           <th className="text-left py-3 px-4 font-medium">Nom</th>
                           <th className="text-left py-3 px-4 font-medium hidden sm:table-cell">Email</th>
-                          <th className="text-right py-3 px-4 font-medium">Action</th>
+                          <th className="text-right py-3 px-4 font-medium">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -199,10 +249,23 @@ const Responsables = () => {
                             <td className="py-3 px-4 font-medium text-foreground">{user.nom_complet}</td>
                             <td className="py-3 px-4 text-muted-foreground hidden sm:table-cell">{user.email || "—"}</td>
                             <td className="py-3 px-4 text-right">
-                              <Button variant="outline" size="sm" onClick={() => openAssignDialog(user)}>
-                                <Shield className="w-3.5 h-3.5 mr-1.5" />
-                                Nommer responsable
-                              </Button>
+                              <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="sm" onClick={() => openAssignDialog(user)}>
+                                  <Shield className="w-3.5 h-3.5 mr-1.5" />
+                                  Nommer
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                                  onClick={() => {
+                                    setDeleteTarget({ userId: user.id, name: user.nom_complet });
+                                    setDeleteConfirmOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -259,7 +322,65 @@ const Responsables = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Remove Confirm */}
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Créer un utilisateur</DialogTitle>
+            <DialogDescription>
+              Créez un nouveau compte utilisateur qui pourra accéder au tableau de bord.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="new-name">Nom complet</Label>
+              <Input
+                id="new-name"
+                value={newNomComplet}
+                onChange={(e) => setNewNomComplet(e.target.value)}
+                placeholder="Jean Dupont"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-email">Email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="jean@email.com"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-password">Mot de passe</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min. 6 caractères"
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Annuler</Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={createUser.isPending || !newEmail || !newPassword || !newNomComplet}
+            >
+              {createUser.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Créer le compte
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Role Confirm */}
       <AlertDialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -272,6 +393,29 @@ const Responsables = () => {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemoveRole} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Retirer le rôle
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete User Confirm */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer définitivement cet utilisateur ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Le compte de <span className="font-semibold">{deleteTarget?.name}</span> sera supprimé définitivement, incluant ses rôles et son profil. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteUser.isPending}
+            >
+              {deleteUser.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Supprimer définitivement
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
