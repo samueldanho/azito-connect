@@ -85,5 +85,41 @@ export const useResponsables = () => {
     },
   });
 
-  return { responsables, isLoading, assignRole, removeRole, assignService };
+  const createUser = useMutation({
+    mutationFn: async ({ email, password, nom_complet }: { email: string; password: string; nom_complet: string }) => {
+      const { data, error } = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: "create", email, password, nom_complet },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["responsables"] });
+      toast({ title: "Utilisateur créé", description: "Le compte a été créé avec succès." });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: "delete", user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["responsables"] });
+      toast({ title: "Utilisateur supprimé", description: "Le compte a été supprimé définitivement." });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    },
+  });
+
+  return { responsables, isLoading, assignRole, removeRole, assignService, createUser, deleteUser };
 };
