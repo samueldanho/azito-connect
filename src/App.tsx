@@ -16,6 +16,8 @@ import Settings from "./pages/Settings";
 import Responsables from "./pages/Responsables";
 import Logs from "./pages/Logs";
 import Register from "./pages/Register";
+import BusCenter from "./pages/BusCenter";
+import BusCenterDashboard from "./pages/BusCenterDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
