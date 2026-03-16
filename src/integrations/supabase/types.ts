@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      bus_center: {
+        Row: {
+          created_at: string
+          date_dimanche: string
+          heure_depart: string
+          id: string
+          nom: string
+          nombre_anciens: number
+          nombre_nouveaux: number
+          prenom: string
+        }
+        Insert: {
+          created_at?: string
+          date_dimanche?: string
+          heure_depart: string
+          id?: string
+          nom: string
+          nombre_anciens?: number
+          nombre_nouveaux?: number
+          prenom: string
+        }
+        Update: {
+          created_at?: string
+          date_dimanche?: string
+          heure_depart?: string
+          id?: string
+          nom?: string
+          nombre_anciens?: number
+          nombre_nouveaux?: number
+          prenom?: string
+        }
+        Relationships: []
+      }
       membres: {
         Row: {
           created_at: string

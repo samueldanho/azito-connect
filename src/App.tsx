@@ -16,6 +16,8 @@ import Settings from "./pages/Settings";
 import Responsables from "./pages/Responsables";
 import Logs from "./pages/Logs";
 import Register from "./pages/Register";
+import BusCenter from "./pages/BusCenter";
+import BusCenterDashboard from "./pages/BusCenterDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/inscription" element={<Register />} />
+            <Route path="/bus-center" element={<BusCenter />} />
             <Route
               path="/dashboard"
               element={
@@ -92,6 +95,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Logs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/bus-center"
+              element={
+                <ProtectedRoute>
+                  <BusCenterDashboard />
                 </ProtectedRoute>
               }
             />

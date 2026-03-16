@@ -1,0 +1,176 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Bus, Users, UserPlus, Trash2, Search, Copy, QrCode } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const BusCenterDashboard = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: entries = [], isLoading } = useQuery({
+    queryKey: ["bus-center"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bus_center")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("bus_center").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bus-center"] });
+      toast({ title: "Supprimé", description: "Entrée supprimée" });
+    },
+  });
+
+  const filtered = entries.filter((e: any) =>
+    `${e.nom} ${e.prenom}`.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalAnciens = filtered.reduce((s: number, e: any) => s + (e.nombre_anciens || 0), 0);
+  const totalNouveaux = filtered.reduce((s: number, e: any) => s + (e.nombre_nouveaux || 0), 0);
+
+  const formUrl = `${window.location.origin}/bus-center`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(formUrl);
+    toast({ title: "Lien copié", description: "Le lien du formulaire bus-center a été copié" });
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardSidebar isCollapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+      <div className={cn("transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>
+        <DashboardHeader onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
+        <main className="p-4 lg:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="font-display text-2xl lg:text-3xl text-foreground">Bus-Center</h1>
+              <p className="text-muted-foreground text-sm mt-1">Suivi des arrivées du dimanche</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={copyLink}>
+              <Copy className="w-4 h-4 mr-2" /> Copier le lien du formulaire
+            </Button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Bus className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total entrées</p>
+                  <p className="text-2xl font-bold text-foreground">{filtered.length}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total anciens</p>
+                  <p className="text-2xl font-bold text-foreground">{totalAnciens}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <UserPlus className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total nouveaux</p>
+                  <p className="text-2xl font-bold text-foreground">{totalNouveaux}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Search + Table */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Search className="w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher par nom ou prénom..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="max-w-sm"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Prénom</TableHead>
+                    <TableHead>Heure départ</TableHead>
+                    <TableHead>Anciens</TableHead>
+                    <TableHead>Nouveaux</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Chargement...</TableCell>
+                    </TableRow>
+                  ) : filtered.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Aucune entrée</TableCell>
+                    </TableRow>
+                  ) : (
+                    filtered.map((e: any) => (
+                      <TableRow key={e.id}>
+                        <TableCell className="font-medium">{e.nom}</TableCell>
+                        <TableCell>{e.prenom}</TableCell>
+                        <TableCell>{e.heure_depart}</TableCell>
+                        <TableCell>{e.nombre_anciens}</TableCell>
+                        <TableCell>{e.nombre_nouveaux}</TableCell>
+                        <TableCell>{format(new Date(e.date_dimanche), "dd MMM yyyy", { locale: fr })}</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(e.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default BusCenterDashboard;

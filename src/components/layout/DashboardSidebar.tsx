@@ -12,6 +12,7 @@ import {
   UserCog,
   FileText,
   ChevronLeft,
+  Bus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +28,7 @@ const menuItems = [
   { icon: Layers, label: "Services", path: "/dashboard/services" },
   { icon: BarChart3, label: "Statistiques", path: "/dashboard/statistiques" },
   { icon: UserCog, label: "Responsables", path: "/dashboard/responsables" },
+  { icon: Bus, label: "Bus-Center", path: "/dashboard/bus-center" },
   { icon: FileText, label: "Logs CRM", path: "/dashboard/logs" },
   { icon: Settings, label: "Paramètres", path: "/dashboard/parametres" },
 ];
