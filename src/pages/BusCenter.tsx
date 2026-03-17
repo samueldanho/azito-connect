@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChurchLogo } from "@/components/icons/ChurchLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, ArrowLeft, Bus, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -12,16 +13,29 @@ const BusCenter = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [zones, setZones] = useState<{ id: string; nom: string }[]>([]);
 
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
+  const [zoneId, setZoneId] = useState("");
   const [heureDepart, setHeureDepart] = useState("");
   const [nombreAnciens, setNombreAnciens] = useState(0);
   const [nombreNouveaux, setNombreNouveaux] = useState(0);
 
+  useEffect(() => {
+    const fetchZones = async () => {
+      const { data } = await supabase.functions.invoke("register-bus-center", {
+        body: { action: "get_zones" },
+      });
+      if (data?.zones) setZones(data.zones);
+    };
+    fetchZones();
+  }, []);
+
   const resetForm = () => {
     setNom("");
     setPrenom("");
+    setZoneId("");
     setHeureDepart("");
     setNombreAnciens(0);
     setNombreNouveaux(0);
@@ -50,6 +64,7 @@ const BusCenter = () => {
         body: {
           nom: nom.trim(),
           prenom: prenom.trim(),
+          zone_id: zoneId || null,
           heure_depart: heureDepart,
           nombre_anciens: nombreAnciens,
           nombre_nouveaux: nombreNouveaux,
@@ -114,64 +129,43 @@ const BusCenter = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="nom">Nom <span className="text-destructive">*</span></Label>
-                <Input
-                  id="nom"
-                  value={nom}
-                  onChange={(e) => setNom(e.target.value)}
-                  placeholder="Votre nom"
-                  className="mt-1"
-                  maxLength={100}
-                  required
-                />
+                <Input id="nom" value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Votre nom" className="mt-1" maxLength={100} required />
               </div>
               <div>
                 <Label htmlFor="prenom">Prénom <span className="text-destructive">*</span></Label>
-                <Input
-                  id="prenom"
-                  value={prenom}
-                  onChange={(e) => setPrenom(e.target.value)}
-                  placeholder="Votre prénom"
-                  className="mt-1"
-                  maxLength={100}
-                  required
-                />
+                <Input id="prenom" value={prenom} onChange={(e) => setPrenom(e.target.value)} placeholder="Votre prénom" className="mt-1" maxLength={100} required />
               </div>
             </div>
 
+            {zones.length > 0 && (
+              <div>
+                <Label>Zone</Label>
+                <Select value={zoneId} onValueChange={setZoneId}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Sélectionnez une zone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {zones.map((z) => (
+                      <SelectItem key={z.id} value={z.id}>{z.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div>
               <Label htmlFor="heureDepart">Heure de départ <span className="text-destructive">*</span></Label>
-              <Input
-                id="heureDepart"
-                type="time"
-                value={heureDepart}
-                onChange={(e) => setHeureDepart(e.target.value)}
-                className="mt-1"
-                required
-              />
+              <Input id="heureDepart" type="time" value={heureDepart} onChange={(e) => setHeureDepart(e.target.value)} className="mt-1" required />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="anciens">Nombre d'anciens</Label>
-                <Input
-                  id="anciens"
-                  type="number"
-                  min={0}
-                  value={nombreAnciens}
-                  onChange={(e) => setNombreAnciens(Math.max(0, parseInt(e.target.value) || 0))}
-                  className="mt-1"
-                />
+                <Input id="anciens" type="number" min={0} value={nombreAnciens} onChange={(e) => setNombreAnciens(Math.max(0, parseInt(e.target.value) || 0))} className="mt-1" />
               </div>
               <div>
                 <Label htmlFor="nouveaux">Nombre de nouveaux</Label>
-                <Input
-                  id="nouveaux"
-                  type="number"
-                  min={0}
-                  value={nombreNouveaux}
-                  onChange={(e) => setNombreNouveaux(Math.max(0, parseInt(e.target.value) || 0))}
-                  className="mt-1"
-                />
+                <Input id="nouveaux" type="number" min={0} value={nombreNouveaux} onChange={(e) => setNombreNouveaux(Math.max(0, parseInt(e.target.value) || 0))} className="mt-1" />
               </div>
             </div>
           </div>
