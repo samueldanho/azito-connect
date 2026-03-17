@@ -68,8 +68,7 @@ const BusCenterDashboard = () => {
     };
   }, [queryClient]);
 
-
-    mutationFn: async (id: string) => {
+  const deleteMutation = useMutation({
       const { error } = await supabase.from("bus_center").delete().eq("id", id);
       if (error) throw error;
     },
