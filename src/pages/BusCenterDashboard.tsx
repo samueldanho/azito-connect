@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
@@ -49,6 +49,24 @@ const BusCenterDashboard = () => {
       return data;
     },
   });
+
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel("bus-center-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bus_center" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["bus-center"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
