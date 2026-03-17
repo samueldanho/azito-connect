@@ -50,7 +50,25 @@ const BusCenterDashboard = () => {
     },
   });
 
-  const deleteMutation = useMutation({
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel("bus-center-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bus_center" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["bus-center"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("bus_center").delete().eq("id", id);
       if (error) throw error;
