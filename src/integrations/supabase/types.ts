@@ -60,6 +60,7 @@ export type Database = {
           nombre_anciens: number
           nombre_nouveaux: number
           prenom: string
+          zone_id: string | null
         }
         Insert: {
           created_at?: string
@@ -70,6 +71,7 @@ export type Database = {
           nombre_anciens?: number
           nombre_nouveaux?: number
           prenom: string
+          zone_id?: string | null
         }
         Update: {
           created_at?: string
@@ -80,6 +82,33 @@ export type Database = {
           nombre_anciens?: number
           nombre_nouveaux?: number
           prenom?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_center_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "bus_center_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bus_center_zones: {
+        Row: {
+          created_at: string
+          id: string
+          nom: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nom: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nom?: string
         }
         Relationships: []
       }
