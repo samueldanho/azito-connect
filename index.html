@@ -20,7 +20,15 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-preloader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,hsl(45,30%,97%),hsl(30,40%,92%));z-index:9999;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+          <div style="width:64px;height:64px;border:4px solid hsla(30,80%,55%,0.2);border-top-color:hsl(30,80%,55%);border-radius:50%;animation:lov-spin 0.8s linear infinite;"></div>
+          <p style="font-family:system-ui,sans-serif;color:hsl(25,25%,25%);font-size:14px;margin:0;">Chargement...</p>
+        </div>
+      </div>
+      <style>@keyframes lov-spin{to{transform:rotate(360deg)}}</style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
