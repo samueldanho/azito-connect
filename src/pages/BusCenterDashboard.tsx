@@ -14,11 +14,13 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const BusCenterDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [zoneFilter, setZoneFilter] = useState<string>("all");
   const [newZoneName, setNewZoneName] = useState("");
   const [zoneDialogOpen, setZoneDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -111,9 +113,16 @@ const BusCenterDashboard = () => {
     addZoneMutation.mutate(newZoneName.trim());
   };
 
-  const filtered = entries.filter((e: any) =>
-    `${e.nom} ${e.prenom}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = entries.filter((e: any) => {
+    const matchesSearch = `${e.nom} ${e.prenom}`.toLowerCase().includes(search.toLowerCase());
+    const matchesZone =
+      zoneFilter === "all"
+        ? true
+        : zoneFilter === "none"
+        ? !e.zone_id
+        : e.zone_id === zoneFilter;
+    return matchesSearch && matchesZone;
+  });
 
   const totalAnciens = filtered.reduce((s: number, e: any) => s + (e.nombre_anciens || 0), 0);
   const totalNouveaux = filtered.reduce((s: number, e: any) => s + (e.nombre_nouveaux || 0), 0);
@@ -227,14 +236,31 @@ const BusCenterDashboard = () => {
           {/* Search + Table */}
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <Search className="w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher par nom ou prénom..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="max-w-sm"
-                />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <Input
+                    placeholder="Rechercher par nom ou prénom..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <Select value={zoneFilter} onValueChange={setZoneFilter}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Filtrer par zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les zones</SelectItem>
+                      <SelectItem value="none">Sans zone</SelectItem>
+                      {zones.map((z: any) => (
+                        <SelectItem key={z.id} value={z.id}>{z.nom}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
