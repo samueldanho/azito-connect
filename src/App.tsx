@@ -5,114 +5,136 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Members from "./pages/Members";
-import Presences from "./pages/Presences";
-import Services from "./pages/Services";
-import Statistics from "./pages/Statistics";
-import Settings from "./pages/Settings";
-import Responsables from "./pages/Responsables";
-import Logs from "./pages/Logs";
-import Register from "./pages/Register";
-import BusCenter from "./pages/BusCenter";
-import BusCenterDashboard from "./pages/BusCenterDashboard";
-import NotFound from "./pages/NotFound";
+import { lazy, Suspense, useEffect, useState } from "react";
+import Preloader from "@/components/shared/Preloader";
+
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Members = lazy(() => import("./pages/Members"));
+const Presences = lazy(() => import("./pages/Presences"));
+const Services = lazy(() => import("./pages/Services"));
+const Statistics = lazy(() => import("./pages/Statistics"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Responsables = lazy(() => import("./pages/Responsables"));
+const Logs = lazy(() => import("./pages/Logs"));
+const Register = lazy(() => import("./pages/Register"));
+const BusCenter = lazy(() => import("./pages/BusCenter"));
+const BusCenterDashboard = lazy(() => import("./pages/BusCenterDashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/inscription" element={<Register />} />
-            <Route path="/bus-center" element={<BusCenter />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/membres"
-              element={
-                <ProtectedRoute>
-                  <Members />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/presences"
-              element={
-                <ProtectedRoute>
-                  <Presences />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/services"
-              element={
-                <ProtectedRoute>
-                  <Services />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/statistiques"
-              element={
-                <ProtectedRoute>
-                  <Statistics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/parametres"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/responsables"
-              element={
-                <ProtectedRoute>
-                  <Responsables />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/logs"
-              element={
-                <ProtectedRoute>
-                  <Logs />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/bus-center"
-              element={
-                <ProtectedRoute>
-                  <BusCenterDashboard />
-                </ProtectedRoute>
-              }
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [appLoading, setAppLoading] = useState(true);
+
+  useEffect(() => {
+    // Brief initial preloader so logo + branding are seen on first paint
+    const t = setTimeout(() => setAppLoading(false), 600);
+    // Hide the static HTML preloader (if present)
+    const initial = document.getElementById("initial-preloader");
+    if (initial) initial.remove();
+    return () => clearTimeout(t);
+  }, []);
+
+  if (appLoading) {
+    return <Preloader message="Initialisation de l'application..." />;
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<Preloader message="Chargement de la page..." />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/inscription" element={<Register />} />
+                <Route path="/bus-center" element={<BusCenter />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/membres"
+                  element={
+                    <ProtectedRoute>
+                      <Members />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/presences"
+                  element={
+                    <ProtectedRoute>
+                      <Presences />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/services"
+                  element={
+                    <ProtectedRoute>
+                      <Services />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/statistiques"
+                  element={
+                    <ProtectedRoute>
+                      <Statistics />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/parametres"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/responsables"
+                  element={
+                    <ProtectedRoute>
+                      <Responsables />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/logs"
+                  element={
+                    <ProtectedRoute>
+                      <Logs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/bus-center"
+                  element={
+                    <ProtectedRoute>
+                      <BusCenterDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
