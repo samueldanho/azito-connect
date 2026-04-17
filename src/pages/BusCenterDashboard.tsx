@@ -15,6 +15,7 @@ import { fr } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import QRCodeShare from "@/components/shared/QRCodeShare";
 
 const BusCenterDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -193,6 +194,12 @@ const BusCenterDashboard = () => {
               <Button variant="outline" size="sm" onClick={copyLink}>
                 <Copy className="w-4 h-4 mr-2" /> Copier le lien
               </Button>
+              <QRCodeShare
+                url={formUrl}
+                title="QR Code Bus-Center"
+                triggerVariant="outline"
+                triggerSize="sm"
+              />
             </div>
           </div>
 
