@@ -21,6 +21,7 @@ const Logs = lazy(() => import("./pages/Logs"));
 const Register = lazy(() => import("./pages/Register"));
 const BusCenter = lazy(() => import("./pages/BusCenter"));
 const BusCenterDashboard = lazy(() => import("./pages/BusCenterDashboard"));
+const Unauthorized = lazy(() => import("./pages/Unauthorized"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -54,10 +55,11 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/inscription" element={<Register />} />
                 <Route path="/bus-center" element={<BusCenter />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
                 <Route
                   path="/dashboard"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <Dashboard />
                     </ProtectedRoute>
                   }
@@ -65,7 +67,7 @@ const App = () => {
                 <Route
                   path="/dashboard/membres"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <Members />
                     </ProtectedRoute>
                   }
@@ -73,7 +75,7 @@ const App = () => {
                 <Route
                   path="/dashboard/presences"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <Presences />
                     </ProtectedRoute>
                   }
@@ -81,7 +83,7 @@ const App = () => {
                 <Route
                   path="/dashboard/services"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger"]}>
                       <Services />
                     </ProtectedRoute>
                   }
@@ -89,7 +91,7 @@ const App = () => {
                 <Route
                   path="/dashboard/statistiques"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <Statistics />
                     </ProtectedRoute>
                   }
@@ -97,7 +99,7 @@ const App = () => {
                 <Route
                   path="/dashboard/parametres"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <Settings />
                     </ProtectedRoute>
                   }
@@ -105,7 +107,7 @@ const App = () => {
                 <Route
                   path="/dashboard/responsables"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger"]}>
                       <Responsables />
                     </ProtectedRoute>
                   }
@@ -113,7 +115,7 @@ const App = () => {
                 <Route
                   path="/dashboard/logs"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger"]}>
                       <Logs />
                     </ProtectedRoute>
                   }
@@ -121,7 +123,7 @@ const App = () => {
                 <Route
                   path="/dashboard/bus-center"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <BusCenterDashboard />
                     </ProtectedRoute>
                   }

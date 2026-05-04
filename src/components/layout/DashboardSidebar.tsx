@@ -15,26 +15,29 @@ import {
   Bus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUserRole, AppRole } from "@/hooks/useUserRole";
 
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
 }
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
-  { icon: Users, label: "Membres", path: "/dashboard/membres" },
-  { icon: Calendar, label: "Présences", path: "/dashboard/presences" },
-  { icon: Layers, label: "Services", path: "/dashboard/services" },
-  { icon: BarChart3, label: "Statistiques", path: "/dashboard/statistiques" },
-  { icon: UserCog, label: "Responsables", path: "/dashboard/responsables" },
-  { icon: Bus, label: "Bus-Center", path: "/dashboard/bus-center" },
-  { icon: FileText, label: "Logs CRM", path: "/dashboard/logs" },
-  { icon: Settings, label: "Paramètres", path: "/dashboard/parametres" },
+const menuItems: { icon: any; label: string; path: string; roles: AppRole[] }[] = [
+  { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard", roles: ["berger", "responsable_service"] },
+  { icon: Users, label: "Membres", path: "/dashboard/membres", roles: ["berger", "responsable_service"] },
+  { icon: Calendar, label: "Présences", path: "/dashboard/presences", roles: ["berger", "responsable_service"] },
+  { icon: Layers, label: "Services", path: "/dashboard/services", roles: ["berger"] },
+  { icon: BarChart3, label: "Statistiques", path: "/dashboard/statistiques", roles: ["berger", "responsable_service"] },
+  { icon: UserCog, label: "Responsables", path: "/dashboard/responsables", roles: ["berger"] },
+  { icon: Bus, label: "Bus-Center", path: "/dashboard/bus-center", roles: ["berger", "responsable_service"] },
+  { icon: FileText, label: "Logs CRM", path: "/dashboard/logs", roles: ["berger"] },
+  { icon: Settings, label: "Paramètres", path: "/dashboard/parametres", roles: ["berger", "responsable_service"] },
 ];
 
 export const DashboardSidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const location = useLocation();
+  const { hasRole } = useUserRole();
+  const visibleItems = menuItems.filter((item) => hasRole(item.roles));
 
   return (
     <aside
@@ -63,7 +66,7 @@ export const DashboardSidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => {
+          {visibleItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <NavLink
