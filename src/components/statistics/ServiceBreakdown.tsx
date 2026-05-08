@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useServiceBreakdown } from "@/hooks/useServiceBreakdown";
 import type { PeriodType } from "@/hooks/useStatistics";
 import { Layers, UserCheck, UserX, Droplet, Heart, Percent } from "lucide-react";
+import { ServiceMembersDialog } from "./ServiceMembersDialog";
 
 interface Props {
   period: PeriodType;
@@ -10,6 +12,7 @@ interface Props {
 
 export const ServiceBreakdown = ({ period }: Props) => {
   const { data: rows = [], isLoading } = useServiceBreakdown(period);
+  const [selected, setSelected] = useState<{ id: string; name: string; color: string } | null>(null);
 
   if (isLoading) {
     return (
