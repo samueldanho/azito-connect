@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useServiceBreakdown } from "@/hooks/useServiceBreakdown";
 import type { PeriodType } from "@/hooks/useStatistics";
 import { Layers, UserCheck, UserX, Droplet, Heart, Percent } from "lucide-react";
+import { ServiceMembersDialog } from "./ServiceMembersDialog";
 
 interface Props {
   period: PeriodType;
@@ -10,6 +12,7 @@ interface Props {
 
 export const ServiceBreakdown = ({ period }: Props) => {
   const { data: rows = [], isLoading } = useServiceBreakdown(period);
+  const [selected, setSelected] = useState<{ id: string; name: string; color: string } | null>(null);
 
   if (isLoading) {
     return (
@@ -30,9 +33,15 @@ export const ServiceBreakdown = ({ period }: Props) => {
   }
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {rows.map((s) => (
-        <div key={s.id} className="glass-card p-5 hover:shadow-elevated transition-all">
+        <button
+          type="button"
+          key={s.id}
+          onClick={() => setSelected({ id: s.id, name: s.name, color: s.color })}
+          className="glass-card p-5 hover:shadow-elevated transition-all text-left focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-xl"
+        >
           <div className="flex items-start gap-3 mb-4">
             <div className="w-2 h-12 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
             <div className="flex-1 min-w-0">
@@ -99,9 +108,16 @@ export const ServiceBreakdown = ({ period }: Props) => {
               color={s.color}
             />
           </div>
-        </div>
+        </button>
       ))}
     </div>
+    <ServiceMembersDialog
+      open={!!selected}
+      onOpenChange={(o) => !o && setSelected(null)}
+      service={selected}
+      period={period}
+    />
+    </>
   );
 };
 
