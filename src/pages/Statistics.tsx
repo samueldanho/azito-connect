@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttendanceChart } from "@/components/dashboard/AttendanceChart";
-import { BarChart3, TrendingUp, Users, Calendar, Award, Percent } from "lucide-react";
+import { ServiceBreakdown } from "@/components/statistics/ServiceBreakdown";
+import { BarChart3, TrendingUp, Users, Calendar, Award, Percent, Layers } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, PieChart, Pie, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -160,6 +161,15 @@ const Statistics = () => {
                     </ChartContainer>
                   )}
                 </div>
+              </div>
+
+              {/* Per-Service Breakdown */}
+              <div className="mb-8">
+                <h2 className="font-display text-xl text-foreground mb-4 flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-primary" />
+                  Tableau de bord par service
+                </h2>
+                <ServiceBreakdown period={period} />
               </div>
 
               {/* Top Members */}
