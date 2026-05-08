@@ -108,9 +108,16 @@ export const ServiceBreakdown = ({ period }: Props) => {
               color={s.color}
             />
           </div>
-        </div>
+        </button>
       ))}
     </div>
+    <ServiceMembersDialog
+      open={!!selected}
+      onOpenChange={(o) => !o && setSelected(null)}
+      service={selected}
+      period={period}
+    />
+    </>
   );
 };
 
