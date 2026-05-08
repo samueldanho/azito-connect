@@ -163,6 +163,15 @@ const Statistics = () => {
                 </div>
               </div>
 
+              {/* Per-Service Breakdown */}
+              <div className="mb-8">
+                <h2 className="font-display text-xl text-foreground mb-4 flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-primary" />
+                  Tableau de bord par service
+                </h2>
+                <ServiceBreakdown period={period} />
+              </div>
+
               {/* Top Members */}
               <div className="glass-card p-6">
                 <h3 className="font-display text-lg text-foreground mb-4 flex items-center gap-2">
