@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttendanceChart } from "@/components/dashboard/AttendanceChart";
-import { BarChart3, TrendingUp, Users, Calendar, Award, Percent } from "lucide-react";
+import { ServiceBreakdown } from "@/components/statistics/ServiceBreakdown";
+import { BarChart3, TrendingUp, Users, Calendar, Award, Percent, Layers } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, PieChart, Pie, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
