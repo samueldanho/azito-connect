@@ -13,6 +13,7 @@ import {
   FileText,
   ChevronLeft,
   Bus,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserRole, AppRole } from "@/hooks/useUserRole";
