@@ -30,6 +30,7 @@ const menuItems: { icon: any; label: string; path: string; roles: AppRole[] }[] 
   { icon: Layers, label: "Services", path: "/dashboard/services", roles: ["berger"] },
   { icon: BarChart3, label: "Statistiques", path: "/dashboard/statistiques", roles: ["berger", "responsable_service"] },
   { icon: UserCog, label: "Responsables", path: "/dashboard/responsables", roles: ["berger"] },
+  { icon: ShieldCheck, label: "Comptes", path: "/dashboard/comptes", roles: ["berger"] },
   { icon: Bus, label: "Bus-Center", path: "/dashboard/bus-center", roles: ["berger", "responsable_service"] },
   { icon: FileText, label: "Logs CRM", path: "/dashboard/logs", roles: ["berger"] },
   { icon: Settings, label: "Paramètres", path: "/dashboard/parametres", roles: ["berger", "responsable_service"] },
