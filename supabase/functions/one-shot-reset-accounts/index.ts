@@ -8,7 +8,7 @@ Deno.serve(async (_req) => {
 
   const KEEP_USER_ID = "REPLACED_AT_RUNTIME";
   const NEW_EMAIL = "admin@gmail.com";
-  const NEW_PASSWORD = "admin123";
+  const NEW_PASSWORD = "Admin@2026!";
 
   // List all users
   const { data: list, error: listErr } = await admin.auth.admin.listUsers({ perPage: 1000 });
