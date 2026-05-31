@@ -114,6 +114,14 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/dashboard/comptes"
+                  element={
+                    <ProtectedRoute allowedRoles={["berger"]}>
+                      <Comptes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/dashboard/logs"
                   element={
                     <ProtectedRoute allowedRoles={["berger"]}>
