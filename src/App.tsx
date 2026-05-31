@@ -17,6 +17,7 @@ const Services = lazy(() => import("./pages/Services"));
 const Statistics = lazy(() => import("./pages/Statistics"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Responsables = lazy(() => import("./pages/Responsables"));
+const Comptes = lazy(() => import("./pages/Comptes"));
 const Logs = lazy(() => import("./pages/Logs"));
 const Register = lazy(() => import("./pages/Register"));
 const BusCenter = lazy(() => import("./pages/BusCenter"));
