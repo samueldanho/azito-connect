@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   Bus,
   ShieldCheck,
+  QrCode,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserRole, AppRole } from "@/hooks/useUserRole";
@@ -27,6 +28,7 @@ const menuItems: { icon: any; label: string; path: string; roles: AppRole[] }[] 
   { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard", roles: ["berger", "responsable_service"] },
   { icon: Users, label: "Membres", path: "/dashboard/membres", roles: ["berger", "responsable_service"] },
   { icon: Calendar, label: "Présences", path: "/dashboard/presences", roles: ["berger", "responsable_service"] },
+  { icon: QrCode, label: "Scan QR", path: "/dashboard/scan-presence", roles: ["berger", "responsable_service"] },
   { icon: Layers, label: "Services", path: "/dashboard/services", roles: ["berger"] },
   { icon: BarChart3, label: "Statistiques", path: "/dashboard/statistiques", roles: ["berger", "responsable_service"] },
   { icon: UserCog, label: "Responsables", path: "/dashboard/responsables", roles: ["berger"] },

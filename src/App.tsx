@@ -23,6 +23,7 @@ const Register = lazy(() => import("./pages/Register"));
 const BusCenter = lazy(() => import("./pages/BusCenter"));
 const BusCenterDashboard = lazy(() => import("./pages/BusCenterDashboard"));
 const Unauthorized = lazy(() => import("./pages/Unauthorized"));
+const ScanPresence = lazy(() => import("./pages/ScanPresence"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -134,6 +135,14 @@ const App = () => {
                   element={
                     <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
                       <BusCenterDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/scan-presence"
+                  element={
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
+                      <ScanPresence />
                     </ProtectedRoute>
                   }
                 />

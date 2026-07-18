@@ -3,7 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Phone, MapPin, Edit2, Trash2, MoreVertical } from "lucide-react";
+import { Phone, MapPin, Edit2, Trash2, MoreVertical, QrCode } from "lucide-react";
+import { useState } from "react";
+import { MemberQRDialog } from "./MemberQRDialog";
 import { useSignedUrl } from "@/hooks/useSignedUrl";
 import {
   DropdownMenu,
@@ -27,6 +29,7 @@ interface MemberCardProps {
 
 export const MemberCard = ({ member, onEdit, onDelete }: MemberCardProps) => {
   const photoUrl = useSignedUrl(member.photo_url);
+  const [qrOpen, setQrOpen] = useState(false);
   const initials = member.nom_complet
     .split(" ")
     .map((n) => n[0])
@@ -84,6 +87,10 @@ export const MemberCard = ({ member, onEdit, onDelete }: MemberCardProps) => {
                     <Edit2 className="h-4 w-4 mr-2" />
                     Modifier
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setQrOpen(true)}>
+                    <QrCode className="h-4 w-4 mr-2" />
+                    Badge QR
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onDelete(member)}
                     className="text-destructive focus:text-destructive"
@@ -133,6 +140,7 @@ export const MemberCard = ({ member, onEdit, onDelete }: MemberCardProps) => {
           </div>
         </div>
       </CardContent>
+      <MemberQRDialog member={qrOpen ? member : null} open={qrOpen} onOpenChange={setQrOpen} />
     </Card>
   );
 };
