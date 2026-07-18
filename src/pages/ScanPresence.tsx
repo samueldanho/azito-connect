@@ -172,7 +172,7 @@ export default function ScanPresence() {
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <div className={cn("transition-all duration-300", sidebarCollapsed ? "ml-20" : "ml-64")}>
-        <DashboardHeader />
+        <DashboardHeader onMenuClick={() => setSidebarCollapsed(!sidebarCollapsed)} />
         <main className="p-6 space-y-6">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
