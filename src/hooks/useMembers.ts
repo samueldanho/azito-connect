@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
@@ -8,9 +8,33 @@ export type Member = Tables<"membres">;
 export type MemberInsert = TablesInsert<"membres">;
 export type MemberUpdate = TablesUpdate<"membres">;
 
+const friendlyError = (message: string) => {
+  if (/row-level security|violates row-level|permission denied/i.test(message)) {
+    return "Vous n'avez pas les droits pour cette action. Vérifiez que le membre est bien assigné à votre service.";
+  }
+  return message;
+};
+
 export const useMembers = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("membres-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "membres" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["membres"] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
 
   const {
     data: members = [],
