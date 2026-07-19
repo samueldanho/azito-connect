@@ -4,6 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Member, MemberInsert, useServices } from "@/hooks/useMembers";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useCurrentProfile } from "@/hooks/useCurrentProfile";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,11 +85,15 @@ export const MemberForm = ({
   isLoading,
 }: MemberFormProps) => {
   const { data: services = [] } = useServices();
+  const { isBerger, isResponsable } = useUserRole();
+  const { data: profile } = useCurrentProfile();
+  const forcedServiceId = !isBerger && isResponsable ? profile?.service_id ?? null : null;
   const { toast } = useToast();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const isEditing = !!member;
+
 
   const {
     register,
@@ -207,16 +214,32 @@ export const MemberForm = ({
   };
 
   const onFormSubmit = (data: MemberFormData) => {
+    // Responsables can only create/edit members within their own service
+    const effectiveServiceId = forcedServiceId
+      ? forcedServiceId
+      : data.service_id || null;
+
+    if (!isBerger && isResponsable && !forcedServiceId) {
+      toast({
+        title: "Aucun service assigné",
+        description:
+          "Votre compte n'est associé à aucun service. Contactez le Berger.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onSubmit({
       nom_complet: data.nom_complet,
       telephone: data.telephone || null,
       lieu_habitation: data.lieu_habitation || null,
-      service_id: data.service_id || null,
+      service_id: effectiveServiceId,
       statut_bapteme: data.statut_bapteme,
       est_actif: data.est_actif,
       photo_url: photoUrl,
     });
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -297,27 +320,36 @@ export const MemberForm = ({
           <div className="space-y-2">
             <Label>Service</Label>
             <Select
-              value={watch("service_id") || ""}
+              value={forcedServiceId ?? watch("service_id") ?? ""}
               onValueChange={(value) => setValue("service_id", value)}
+              disabled={!!forcedServiceId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un service" />
               </SelectTrigger>
               <SelectContent>
-                {services.map((service) => (
-                  <SelectItem key={service.id} value={service.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: service.couleur || "#D97706" }}
-                      />
-                      {service.nom}
-                    </div>
-                  </SelectItem>
-                ))}
+                {services
+                  .filter((s) => !forcedServiceId || s.id === forcedServiceId)
+                  .map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: service.couleur || "#D97706" }}
+                        />
+                        {service.nom}
+                      </div>
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
+            {forcedServiceId && (
+              <p className="text-xs text-muted-foreground">
+                Les membres que vous créez sont automatiquement rattachés à votre service.
+              </p>
+            )}
           </div>
+
 
           {/* Baptism Status */}
           <div className="space-y-2">
