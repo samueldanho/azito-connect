@@ -85,11 +85,15 @@ export const MemberForm = ({
   isLoading,
 }: MemberFormProps) => {
   const { data: services = [] } = useServices();
+  const { isBerger, isResponsable } = useUserRole();
+  const { data: profile } = useCurrentProfile();
+  const forcedServiceId = !isBerger && isResponsable ? profile?.service_id ?? null : null;
   const { toast } = useToast();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const isEditing = !!member;
+
 
   const {
     register,
