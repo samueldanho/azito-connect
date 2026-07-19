@@ -81,7 +81,7 @@ export const useMembers = () => {
     onError: (error: Error) => {
       toast({
         title: "Erreur",
-        description: error.message,
+        description: friendlyError(error.message),
         variant: "destructive",
       });
     },
@@ -109,7 +109,7 @@ export const useMembers = () => {
     onError: (error: Error) => {
       toast({
         title: "Erreur",
-        description: error.message,
+        description: friendlyError(error.message),
         variant: "destructive",
       });
     },
@@ -131,7 +131,7 @@ export const useMembers = () => {
     onError: (error: Error) => {
       toast({
         title: "Erreur",
-        description: error.message,
+        description: friendlyError(error.message),
         variant: "destructive",
       });
     },
