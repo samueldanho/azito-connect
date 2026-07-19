@@ -214,16 +214,32 @@ export const MemberForm = ({
   };
 
   const onFormSubmit = (data: MemberFormData) => {
+    // Responsables can only create/edit members within their own service
+    const effectiveServiceId = forcedServiceId
+      ? forcedServiceId
+      : data.service_id || null;
+
+    if (!isBerger && isResponsable && !forcedServiceId) {
+      toast({
+        title: "Aucun service assigné",
+        description:
+          "Votre compte n'est associé à aucun service. Contactez le Berger.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onSubmit({
       nom_complet: data.nom_complet,
       telephone: data.telephone || null,
       lieu_habitation: data.lieu_habitation || null,
-      service_id: data.service_id || null,
+      service_id: effectiveServiceId,
       statut_bapteme: data.statut_bapteme,
       est_actif: data.est_actif,
       photo_url: photoUrl,
     });
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
