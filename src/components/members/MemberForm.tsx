@@ -320,27 +320,36 @@ export const MemberForm = ({
           <div className="space-y-2">
             <Label>Service</Label>
             <Select
-              value={watch("service_id") || ""}
+              value={forcedServiceId ?? watch("service_id") ?? ""}
               onValueChange={(value) => setValue("service_id", value)}
+              disabled={!!forcedServiceId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un service" />
               </SelectTrigger>
               <SelectContent>
-                {services.map((service) => (
-                  <SelectItem key={service.id} value={service.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: service.couleur || "#D97706" }}
-                      />
-                      {service.nom}
-                    </div>
-                  </SelectItem>
-                ))}
+                {services
+                  .filter((s) => !forcedServiceId || s.id === forcedServiceId)
+                  .map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: service.couleur || "#D97706" }}
+                        />
+                        {service.nom}
+                      </div>
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
+            {forcedServiceId && (
+              <p className="text-xs text-muted-foreground">
+                Les membres que vous créez sont automatiquement rattachés à votre service.
+              </p>
+            )}
           </div>
+
 
           {/* Baptism Status */}
           <div className="space-y-2">
