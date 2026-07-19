@@ -28,7 +28,7 @@ interface ScanLog {
   message?: string;
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const BADGE_RE = /^BADGE\.v1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 
 export default function ScanPresence() {
   const { toast } = useToast();
@@ -69,9 +69,9 @@ export default function ScanPresence() {
     }
     lastScanRef.current = { id, at: now };
 
-    if (!UUID_RE.test(id)) {
+    if (!BADGE_RE.test(id)) {
       setLogs((l) => [
-        { id: crypto.randomUUID(), name: "QR invalide", time: new Date().toLocaleTimeString(), status: "error", message: "Format non reconnu" },
+        { id: crypto.randomUUID(), name: "Badge non signé", time: new Date().toLocaleTimeString(), status: "error", message: "Ancien badge — régénérez-le depuis la fiche du membre" },
         ...l,
       ]);
       return;
@@ -79,10 +79,22 @@ export default function ScanPresence() {
 
     processingRef.current = true;
     try {
+      // Verify signature + expiration server-side
+      const { data: verif, error: vErr } = await supabase.functions.invoke("verify-badge-token", {
+        body: { token: id },
+      });
+      if (vErr || !verif?.valid) {
+        setLogs((l) => [
+          { id: crypto.randomUUID(), name: "Badge rejeté", time: new Date().toLocaleTimeString(), status: "error", message: verif?.reason || vErr?.message || "Invalide" },
+          ...l,
+        ]);
+        return;
+      }
+
       const { data: membre, error: mErr } = await supabase
         .from("membres")
         .select("id, nom_complet, service_id")
-        .eq("id", id)
+        .eq("id", verif.member_id)
         .maybeSingle();
 
       if (mErr || !membre) {
