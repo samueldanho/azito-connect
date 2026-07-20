@@ -45,6 +45,28 @@ export const useResponsables = () => {
     },
   });
 
+  // Realtime sync: any change on profiles/user_roles/services invalidates the shared cache
+  useEffect(() => {
+    const channel = supabase
+      .channel("responsables-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["responsables"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["responsables"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["responsables"] });
+        queryClient.invalidateQueries({ queryKey: ["services"] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+
   const assignRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: "berger" | "responsable_service" }) => {
       const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
