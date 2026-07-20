@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
 
 export const useResponsables = () => {
   const { toast } = useToast();
@@ -42,6 +44,28 @@ export const useResponsables = () => {
       }));
     },
   });
+
+  // Realtime sync: any change on profiles/user_roles/services invalidates the shared cache
+  useEffect(() => {
+    const channel = supabase
+      .channel("responsables-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["responsables"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["responsables"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "services" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["responsables"] });
+        queryClient.invalidateQueries({ queryKey: ["services"] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
 
   const assignRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: "berger" | "responsable_service" }) => {
