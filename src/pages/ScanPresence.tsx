@@ -55,9 +55,12 @@ export default function ScanPresence() {
   };
 
   useEffect(() => {
+    // Auto-start camera when arriving on the page
+    startScanner();
     return () => {
       stopScanner();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDecoded = async (decoded: string) => {
@@ -155,26 +158,47 @@ export default function ScanPresence() {
 
   const startScanner = async () => {
     try {
+      // Ensure permission prompt fires (works better than only facingMode on some browsers)
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
+        stream.getTracks().forEach((t) => t.stop());
+      } catch {
+        // Ignore — Html5Qrcode.start will surface the real error below
+      }
+
       const scanner = new Html5Qrcode("qr-reader");
       scannerRef.current = scanner;
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 260, height: 260 } },
-        (decoded) => {
-          handleDecoded(decoded);
-        },
-        () => {}
-      );
+
+      const config = { fps: 10, qrbox: { width: 260, height: 260 } };
+      const onSuccess = (decoded: string) => handleDecoded(decoded);
+
+      try {
+        await scanner.start({ facingMode: { ideal: "environment" } } as any, config, onSuccess, () => {});
+      } catch {
+        // Fallback: pick the first available camera device
+        const cams = await Html5Qrcode.getCameras();
+        if (!cams || cams.length === 0) throw new Error("Aucune caméra détectée sur cet appareil.");
+        await scanner.start(cams[0].id, config, onSuccess, () => {});
+      }
+
       setScanning(true);
     } catch (e: any) {
+      const msg = e?.message || "Vérifiez les permissions du navigateur.";
+      const isPerm = /permission|denied|NotAllowed/i.test(msg);
       toast({
-        title: "Impossible d'accéder à la caméra",
-        description: e?.message || "Vérifiez les permissions du navigateur.",
+        title: "Caméra indisponible",
+        description: isPerm
+          ? "Autorisez la caméra dans votre navigateur, puis rouvrez la page. Sur l'aperçu Lovable, ouvrez l'app dans un nouvel onglet pour activer la caméra."
+          : msg,
         variant: "destructive",
       });
       scannerRef.current = null;
       setScanning(false);
     }
+  };
+
+  const openInNewTab = () => {
+    window.open(window.location.href, "_blank", "noopener,noreferrer");
   };
 
   const handleFileUpload = async (file: File) => {
@@ -234,10 +258,15 @@ export default function ScanPresence() {
                     Arrêter
                   </Button>
                 ) : (
-                  <Button size="sm" onClick={startScanner}>
-                    <Play className="w-4 h-4 mr-2" />
-                    Démarrer
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={openInNewTab}>
+                      Ouvrir dans un onglet
+                    </Button>
+                    <Button size="sm" onClick={startScanner}>
+                      <Play className="w-4 h-4 mr-2" />
+                      Démarrer
+                    </Button>
+                  </div>
                 )}
               </CardHeader>
               <CardContent>
