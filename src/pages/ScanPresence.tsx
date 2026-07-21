@@ -55,9 +55,12 @@ export default function ScanPresence() {
   };
 
   useEffect(() => {
+    // Auto-start camera when arriving on the page
+    startScanner();
     return () => {
       stopScanner();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDecoded = async (decoded: string) => {
