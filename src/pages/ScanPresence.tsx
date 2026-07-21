@@ -258,10 +258,15 @@ export default function ScanPresence() {
                     Arrêter
                   </Button>
                 ) : (
-                  <Button size="sm" onClick={startScanner}>
-                    <Play className="w-4 h-4 mr-2" />
-                    Démarrer
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={openInNewTab}>
+                      Ouvrir dans un onglet
+                    </Button>
+                    <Button size="sm" onClick={startScanner}>
+                      <Play className="w-4 h-4 mr-2" />
+                      Démarrer
+                    </Button>
+                  </div>
                 )}
               </CardHeader>
               <CardContent>
