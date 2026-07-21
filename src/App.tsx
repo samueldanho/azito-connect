@@ -147,6 +147,14 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/dashboard/aide-camera"
+                  element={
+                    <ProtectedRoute allowedRoles={["berger", "responsable_service"]}>
+                      <AideCamera />
+                    </ProtectedRoute>
+                  }
+                />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
