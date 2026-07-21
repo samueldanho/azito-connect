@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, Camera, CheckCircle2, XCircle, Play, Square } from "lucide-react";
+import { QrCode, Camera, CheckCircle2, XCircle, Play, Square, Upload, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TypeActivite } from "@/hooks/usePresences";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +40,8 @@ export default function ScanPresence() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const lastScanRef = useRef<{ id: string; at: number } | null>(null);
   const processingRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [manualToken, setManualToken] = useState("");
 
   const stopScanner = async () => {
     if (scannerRef.current) {
@@ -175,6 +177,27 @@ export default function ScanPresence() {
     }
   };
 
+  const handleFileUpload = async (file: File) => {
+    try {
+      const scanner = new Html5Qrcode("qr-reader-file", { verbose: false } as any);
+      const decoded = await scanner.scanFile(file, true);
+      await handleDecoded(decoded);
+    } catch (e: any) {
+      toast({
+        title: "QR non détecté",
+        description: e?.message || "Aucun QR code lisible dans l'image.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    const t = manualToken.trim();
+    if (!t) return;
+    await handleDecoded(t);
+    setManualToken("");
+  };
+
   const okCount = logs.filter((l) => l.status === "ok").length;
 
   return (
@@ -258,6 +281,49 @@ export default function ScanPresence() {
                       <p className="text-sm">Cliquez sur « Démarrer » pour activer la caméra.</p>
                     </div>
                   )}
+                </div>
+                <div id="qr-reader-file" className="hidden" />
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Importer une image QR</Label>
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleFileUpload(f);
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Choisir une image
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Coller le token du badge</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        value={manualToken}
+                        onChange={(e) => setManualToken(e.target.value)}
+                        placeholder="BADGE.v1...."
+                        onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
+                      />
+                      <Button type="button" onClick={handleManualSubmit} disabled={!manualToken.trim()}>
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
