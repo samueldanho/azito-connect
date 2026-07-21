@@ -24,6 +24,7 @@ const BusCenter = lazy(() => import("./pages/BusCenter"));
 const BusCenterDashboard = lazy(() => import("./pages/BusCenterDashboard"));
 const Unauthorized = lazy(() => import("./pages/Unauthorized"));
 const ScanPresence = lazy(() => import("./pages/ScanPresence"));
+const AideCamera = lazy(() => import("./pages/AideCamera"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
