@@ -177,6 +177,27 @@ export default function ScanPresence() {
     }
   };
 
+  const handleFileUpload = async (file: File) => {
+    try {
+      const scanner = new Html5Qrcode("qr-reader-file", { verbose: false } as any);
+      const decoded = await scanner.scanFile(file, true);
+      await handleDecoded(decoded);
+    } catch (e: any) {
+      toast({
+        title: "QR non détecté",
+        description: e?.message || "Aucun QR code lisible dans l'image.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    const t = manualToken.trim();
+    if (!t) return;
+    await handleDecoded(t);
+    setManualToken("");
+  };
+
   const okCount = logs.filter((l) => l.status === "ok").length;
 
   return (
