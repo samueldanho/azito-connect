@@ -40,6 +40,8 @@ export default function ScanPresence() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const lastScanRef = useRef<{ id: string; at: number } | null>(null);
   const processingRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [manualToken, setManualToken] = useState("");
 
   const stopScanner = async () => {
     if (scannerRef.current) {
