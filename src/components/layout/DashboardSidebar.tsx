@@ -15,7 +15,6 @@ import {
   Bus,
   ShieldCheck,
   QrCode,
-  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserRole, AppRole } from "@/hooks/useUserRole";
@@ -37,7 +36,6 @@ const menuItems: { icon: any; label: string; path: string; roles: AppRole[] }[] 
   { icon: Bus, label: "Bus-Center", path: "/dashboard/bus-center", roles: ["berger", "responsable_service"] },
   { icon: FileText, label: "Logs CRM", path: "/dashboard/logs", roles: ["berger"] },
   { icon: Settings, label: "Paramètres", path: "/dashboard/parametres", roles: ["berger", "responsable_service"] },
-  { icon: HelpCircle, label: "Aide caméra", path: "/dashboard/aide-camera", roles: ["berger", "responsable_service"] },
 ];
 
 export const DashboardSidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
