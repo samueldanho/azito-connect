@@ -37,7 +37,6 @@ export default function ScanPresence() {
   const [logs, setLogs] = useState<ScanLog[]>([]);
   const lastScanRef = useRef<{ id: string; at: number } | null>(null);
   const processingRef = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [manualToken, setManualToken] = useState("");
 
   const handleDecoded = async (decoded: string) => {
