@@ -160,7 +160,7 @@ export default function ScanPresence() {
             <div>
               <h1 className="text-2xl font-display font-semibold">Scan présence rapide</h1>
               <p className="text-sm text-muted-foreground">
-                Importez une image QR ou collez le token du badge pour enregistrer la présence.
+                Collez le token du badge pour enregistrer la présence.
               </p>
             </div>
           </div>
