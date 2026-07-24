@@ -53,8 +53,10 @@ const routesMatrix: { path: string; allowed: AppRole[] }[] = [
   { path: "/dashboard/statistiques", allowed: ["berger", "responsable_service"] },
   { path: "/dashboard/parametres", allowed: ["berger", "responsable_service"] },
   { path: "/dashboard/responsables", allowed: ["berger"] },
+  { path: "/dashboard/comptes", allowed: ["berger"] },
   { path: "/dashboard/logs", allowed: ["berger"] },
   { path: "/dashboard/bus-center", allowed: ["berger", "responsable_service"] },
+  { path: "/dashboard/scan-presence", allowed: ["berger", "responsable_service"] },
 ];
 
 const renderRoute = (path: string, allowed: AppRole[]) =>
@@ -137,9 +139,11 @@ const sidebarItemsByRole = {
     "Tableau de bord",
     "Membres",
     "Présences",
+    "Scan QR",
     "Services",
     "Statistiques",
     "Responsables",
+    "Comptes",
     "Bus-Center",
     "Logs CRM",
     "Paramètres",
@@ -148,12 +152,13 @@ const sidebarItemsByRole = {
     "Tableau de bord",
     "Membres",
     "Présences",
+    "Scan QR",
     "Statistiques",
     "Bus-Center",
     "Paramètres",
   ],
 };
-const hiddenForResponsable = ["Services", "Responsables", "Logs CRM"];
+const hiddenForResponsable = ["Services", "Responsables", "Comptes", "Logs CRM"];
 
 const renderSidebar = () =>
   render(
@@ -163,7 +168,7 @@ const renderSidebar = () =>
   );
 
 describe("DashboardSidebar — filtrage par rôle", () => {
-  it("BERGER voit les 9 items", () => {
+  it("BERGER voit les items autorisés", () => {
     currentRoles = ["berger"];
     renderSidebar();
     sidebarItemsByRole.berger.forEach((label) => {
@@ -171,7 +176,7 @@ describe("DashboardSidebar — filtrage par rôle", () => {
     });
   });
 
-  it("RESPONSABLE_SERVICE voit 6 items et ne voit pas Services / Responsables / Logs CRM", () => {
+  it("RESPONSABLE_SERVICE voit ses items et ne voit pas les pages Berger", () => {
     currentRoles = ["responsable_service"];
     renderSidebar();
     sidebarItemsByRole.responsable_service.forEach((label) => {
