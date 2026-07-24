@@ -201,49 +201,21 @@ export default function ScanPresence() {
                     </Select>
                   </div>
                 </div>
-                <div id="qr-reader-file" className="hidden" />
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Importer une image QR</Label>
-                    <div className="flex gap-2 mt-1">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) handleFileUpload(f);
-                          if (fileInputRef.current) fileInputRef.current.value = "";
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Choisir une image
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Coller le token du badge</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input
-                        value={manualToken}
-                        onChange={(e) => setManualToken(e.target.value)}
-                        placeholder="BADGE.v1...."
-                        onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
-                      />
-                      <Button type="button" onClick={handleManualSubmit} disabled={!manualToken.trim()}>
-                        <Send className="w-4 h-4" />
-                      </Button>
-                    </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Coller le token du badge</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      value={manualToken}
+                      onChange={(e) => setManualToken(e.target.value)}
+                      placeholder="BADGE.v1...."
+                      onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
+                    />
+                    <Button type="button" onClick={handleManualSubmit} disabled={!manualToken.trim()}>
+                      <Send className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
+
               </CardContent>
             </Card>
 
