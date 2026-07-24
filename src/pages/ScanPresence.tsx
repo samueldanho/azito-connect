@@ -13,11 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, CheckCircle2, XCircle, Upload, Send } from "lucide-react";
+import { QrCode, CheckCircle2, XCircle, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TypeActivite } from "@/hooks/usePresences";
 import { useToast } from "@/hooks/use-toast";
-import { Html5Qrcode } from "html5-qrcode";
 import { cn } from "@/lib/utils";
 
 interface ScanLog {
