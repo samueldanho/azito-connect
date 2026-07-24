@@ -132,23 +132,8 @@ export default function ScanPresence() {
     }
   };
 
-  const handleFileUpload = async (file: File) => {
-    const scanner = new Html5Qrcode("qr-reader-file", { verbose: false } as any);
-    try {
-      const decoded = await scanner.scanFile(file, true);
-      await handleDecoded(decoded);
-    } catch (e: any) {
-      toast({
-        title: "QR non détecté",
-        description: e?.message || "Aucun QR code lisible dans l'image.",
-        variant: "destructive",
-      });
-    } finally {
-      try {
-        await scanner.clear();
-      } catch {}
-    }
-  };
+
+
 
   const handleManualSubmit = async () => {
     const t = manualToken.trim();
