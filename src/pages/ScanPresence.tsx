@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, Camera, CheckCircle2, XCircle, Play, Square, Upload, Send } from "lucide-react";
+import { QrCode, CheckCircle2, XCircle, Upload, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TypeActivite } from "@/hooks/usePresences";
 import { useToast } from "@/hooks/use-toast";
@@ -35,33 +35,11 @@ export default function ScanPresence() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [activite, setActivite] = useState<TypeActivite>("culte");
-  const [scanning, setScanning] = useState(false);
   const [logs, setLogs] = useState<ScanLog[]>([]);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
   const lastScanRef = useRef<{ id: string; at: number } | null>(null);
   const processingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [manualToken, setManualToken] = useState("");
-
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-        await scannerRef.current.clear();
-      } catch {}
-      scannerRef.current = null;
-    }
-    setScanning(false);
-  };
-
-  useEffect(() => {
-    // Auto-start camera when arriving on the page
-    startScanner();
-    return () => {
-      stopScanner();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleDecoded = async (decoded: string) => {
     if (processingRef.current) return;
@@ -156,54 +134,9 @@ export default function ScanPresence() {
     }
   };
 
-  const startScanner = async () => {
-    try {
-      // Ensure permission prompt fires (works better than only facingMode on some browsers)
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
-        stream.getTracks().forEach((t) => t.stop());
-      } catch {
-        // Ignore — Html5Qrcode.start will surface the real error below
-      }
-
-      const scanner = new Html5Qrcode("qr-reader");
-      scannerRef.current = scanner;
-
-      const config = { fps: 10, qrbox: { width: 260, height: 260 } };
-      const onSuccess = (decoded: string) => handleDecoded(decoded);
-
-      try {
-        await scanner.start({ facingMode: { ideal: "environment" } } as any, config, onSuccess, () => {});
-      } catch {
-        // Fallback: pick the first available camera device
-        const cams = await Html5Qrcode.getCameras();
-        if (!cams || cams.length === 0) throw new Error("Aucune caméra détectée sur cet appareil.");
-        await scanner.start(cams[0].id, config, onSuccess, () => {});
-      }
-
-      setScanning(true);
-    } catch (e: any) {
-      const msg = e?.message || "Vérifiez les permissions du navigateur.";
-      const isPerm = /permission|denied|NotAllowed/i.test(msg);
-      toast({
-        title: "Caméra indisponible",
-        description: isPerm
-          ? "Autorisez la caméra dans votre navigateur, puis rouvrez la page. Sur l'aperçu Lovable, ouvrez l'app dans un nouvel onglet pour activer la caméra."
-          : msg,
-        variant: "destructive",
-      });
-      scannerRef.current = null;
-      setScanning(false);
-    }
-  };
-
-  const openInNewTab = () => {
-    window.open(window.location.href, "_blank", "noopener,noreferrer");
-  };
-
   const handleFileUpload = async (file: File) => {
+    const scanner = new Html5Qrcode("qr-reader-file", { verbose: false } as any);
     try {
-      const scanner = new Html5Qrcode("qr-reader-file", { verbose: false } as any);
       const decoded = await scanner.scanFile(file, true);
       await handleDecoded(decoded);
     } catch (e: any) {
@@ -212,6 +145,10 @@ export default function ScanPresence() {
         description: e?.message || "Aucun QR code lisible dans l'image.",
         variant: "destructive",
       });
+    } finally {
+      try {
+        await scanner.clear();
+      } catch {}
     }
   };
 
@@ -240,34 +177,18 @@ export default function ScanPresence() {
             <div>
               <h1 className="text-2xl font-display font-semibold">Scan présence rapide</h1>
               <p className="text-sm text-muted-foreground">
-                Scannez le QR code du membre pour l'enregistrer présent.
+                Importez une image QR ou collez le token du badge pour enregistrer la présence.
               </p>
             </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-2">
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Caméra
+                  <QrCode className="w-5 h-5" />
+                  Badge QR
                 </CardTitle>
-                {scanning ? (
-                  <Button variant="destructive" size="sm" onClick={stopScanner}>
-                    <Square className="w-4 h-4 mr-2" />
-                    Arrêter
-                  </Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={openInNewTab}>
-                      Ouvrir dans un onglet
-                    </Button>
-                    <Button size="sm" onClick={startScanner}>
-                      <Play className="w-4 h-4 mr-2" />
-                      Démarrer
-                    </Button>
-                  </div>
-                )}
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 mb-4">
@@ -297,23 +218,9 @@ export default function ScanPresence() {
                     </Select>
                   </div>
                 </div>
-                <div
-                  id="qr-reader"
-                  className={cn(
-                    "w-full rounded-lg overflow-hidden bg-muted/40 border-2 border-dashed border-border",
-                    !scanning && "min-h-[280px] flex items-center justify-center"
-                  )}
-                >
-                  {!scanning && (
-                    <div className="text-center text-muted-foreground p-8">
-                      <Camera className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">Cliquez sur « Démarrer » pour activer la caméra.</p>
-                    </div>
-                  )}
-                </div>
                 <div id="qr-reader-file" className="hidden" />
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <Label className="text-xs text-muted-foreground">Importer une image QR</Label>
                     <div className="flex gap-2 mt-1">
