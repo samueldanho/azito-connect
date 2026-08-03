@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Member } from "@/hooks/useMembers";
 import { PresenceWithMember, TypeActivite, PresenceInsert } from "@/hooks/usePresences";
 import { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
 // Helper component for signed URL avatars in lists
 const SignedAvatar = ({ photoUrl, name, className }: { photoUrl: string | null; name: string; className?: string }) => {
