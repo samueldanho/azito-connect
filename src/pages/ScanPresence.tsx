@@ -29,6 +29,57 @@ interface ScanLog {
 
 const BADGE_RE = /^BADGE\.v1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 
+type TokenState =
+  | { kind: "idle" }
+  | { kind: "checking" }
+  | { kind: "invalid"; title: string; detail: string }
+  | { kind: "valid"; title: string; detail: string };
+
+// Traduit les raisons renvoyées par la fonction de vérification en messages clairs
+function explainReason(reason?: string): { title: string; detail: string } {
+  const r = (reason || "").toLowerCase();
+  if (r.includes("expir")) {
+    return {
+      title: "Token expiré",
+      detail: "Ce badge a dépassé sa durée de validité. Régénérez-le depuis la fiche du membre.",
+    };
+  }
+  if (r.includes("signature")) {
+    return {
+      title: "Token invalide",
+      detail: "La signature du badge est incorrecte : badge falsifié ou généré avec une autre clé.",
+    };
+  }
+  if (r.includes("format")) {
+    return {
+      title: "Token invalide",
+      detail: "Format non reconnu — il s'agit probablement d'un ancien badge non signé.",
+    };
+  }
+  if (r.includes("payload") || r.includes("identifiant")) {
+    return {
+      title: "Token invalide",
+      detail: "Le contenu du badge est illisible ou corrompu.",
+    };
+  }
+  if (r.includes("unauthorized")) {
+    return {
+      title: "Session expirée",
+      detail: "Reconnectez-vous pour pouvoir vérifier les badges.",
+    };
+  }
+  if (r.includes("config")) {
+    return {
+      title: "Configuration manquante",
+      detail: "La clé de signature des badges n'est pas configurée côté serveur.",
+    };
+  }
+  return {
+    title: "Token invalide ou expiré",
+    detail: reason || "Vérification impossible. Réessayez ou régénérez le badge.",
+  };
+}
+
 export default function ScanPresence() {
   const { toast } = useToast();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -38,10 +89,31 @@ export default function ScanPresence() {
   const lastScanRef = useRef<{ id: string; at: number } | null>(null);
   const processingRef = useRef(false);
   const [manualToken, setManualToken] = useState("");
+  const [tokenState, setTokenState] = useState<TokenState>({ kind: "idle" });
+
+  const pushLog = (log: Omit<ScanLog, "id" | "time">) =>
+    setLogs((l) => [
+      { id: crypto.randomUUID(), time: new Date().toLocaleTimeString(), ...log },
+      ...l,
+    ]);
 
   const handleDecoded = async (decoded: string) => {
     if (processingRef.current) return;
     const id = decoded.trim();
+
+    // Validation locale du format avant tout appel réseau
+    if (!id) {
+      setTokenState({ kind: "invalid", title: "Token vide", detail: "Collez le token du badge avant de valider." });
+      return;
+    }
+    if (!BADGE_RE.test(id)) {
+      const detail = id.startsWith("BADGE.")
+        ? "Structure du token incorrecte (attendu : BADGE.v1.<payload>.<signature>)."
+        : "Ce code n'est pas un badge signé — régénérez-le depuis la fiche du membre.";
+      setTokenState({ kind: "invalid", title: "Token invalide", detail });
+      pushLog({ name: "Badge non signé", status: "error", message: detail });
+      return;
+    }
 
     // Debounce identical scans (2s window)
     const now = Date.now();
@@ -50,25 +122,17 @@ export default function ScanPresence() {
     }
     lastScanRef.current = { id, at: now };
 
-    if (!BADGE_RE.test(id)) {
-      setLogs((l) => [
-        { id: crypto.randomUUID(), name: "Badge non signé", time: new Date().toLocaleTimeString(), status: "error", message: "Ancien badge — régénérez-le depuis la fiche du membre" },
-        ...l,
-      ]);
-      return;
-    }
-
     processingRef.current = true;
+    setTokenState({ kind: "checking" });
     try {
       // Verify signature + expiration server-side
       const { data: verif, error: vErr } = await supabase.functions.invoke("verify-badge-token", {
         body: { token: id },
       });
       if (vErr || !verif?.valid) {
-        setLogs((l) => [
-          { id: crypto.randomUUID(), name: "Badge rejeté", time: new Date().toLocaleTimeString(), status: "error", message: verif?.reason || vErr?.message || "Invalide" },
-          ...l,
-        ]);
+        const { title, detail } = explainReason(verif?.reason || vErr?.message);
+        setTokenState({ kind: "invalid", title, detail });
+        pushLog({ name: "Badge rejeté", status: "error", message: `${title} — ${detail}` });
         return;
       }
 
@@ -79,10 +143,9 @@ export default function ScanPresence() {
         .maybeSingle();
 
       if (mErr || !membre) {
-        setLogs((l) => [
-          { id: crypto.randomUUID(), name: "Membre introuvable", time: new Date().toLocaleTimeString(), status: "error" },
-          ...l,
-        ]);
+        const detail = "Aucun membre ne correspond à ce badge (membre supprimé ou hors de votre périmètre).";
+        setTokenState({ kind: "invalid", title: "Membre introuvable", detail });
+        pushLog({ name: "Membre introuvable", status: "error", message: detail });
         return;
       }
 
@@ -96,10 +159,12 @@ export default function ScanPresence() {
         .maybeSingle();
 
       if (existing?.est_present) {
-        setLogs((l) => [
-          { id: crypto.randomUUID(), name: membre.nom_complet, time: new Date().toLocaleTimeString(), status: "duplicate", message: "Déjà marqué présent" },
-          ...l,
-        ]);
+        setTokenState({
+          kind: "valid",
+          title: `${membre.nom_complet} — déjà présent`,
+          detail: "La présence était déjà enregistrée pour cette date et cette activité.",
+        });
+        pushLog({ name: membre.nom_complet, status: "duplicate", message: "Déjà marqué présent" });
         return;
       }
 
@@ -116,17 +181,24 @@ export default function ScanPresence() {
         : await supabase.from("presences").insert(payload);
 
       if (upErr) {
-        setLogs((l) => [
-          { id: crypto.randomUUID(), name: membre.nom_complet, time: new Date().toLocaleTimeString(), status: "error", message: upErr.message },
-          ...l,
-        ]);
+        const detail = upErr.message.toLowerCase().includes("row-level")
+          ? "Vous n'avez pas les droits pour enregistrer la présence de ce membre."
+          : upErr.message;
+        setTokenState({ kind: "invalid", title: "Enregistrement refusé", detail });
+        pushLog({ name: membre.nom_complet, status: "error", message: detail });
         return;
       }
 
-      setLogs((l) => [
-        { id: crypto.randomUUID(), name: membre.nom_complet, time: new Date().toLocaleTimeString(), status: "ok" },
-        ...l,
-      ]);
+      setTokenState({
+        kind: "valid",
+        title: `${membre.nom_complet} — présence enregistrée`,
+        detail: `Badge valide • ${date} • ${activite}`,
+      });
+      pushLog({ name: membre.nom_complet, status: "ok" });
+    } catch (e) {
+      const detail = (e as Error).message || "Erreur réseau pendant la vérification du badge.";
+      setTokenState({ kind: "invalid", title: "Vérification impossible", detail });
+      pushLog({ name: "Erreur", status: "error", message: detail });
     } finally {
       processingRef.current = false;
     }
