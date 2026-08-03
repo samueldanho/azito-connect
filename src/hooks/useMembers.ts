@@ -62,9 +62,10 @@ export const useMembers = () => {
 
   const createMember = useMutation({
     mutationFn: async (member: MemberInsert) => {
+      const { data: auth } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("membres")
-        .insert(member)
+        .insert({ ...member, created_by: member.created_by ?? auth.user?.id ?? null })
         .select()
         .single();
 
