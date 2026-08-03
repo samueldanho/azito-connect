@@ -209,11 +209,14 @@ export default function ScanPresence() {
 
   const handleManualSubmit = async () => {
     const t = manualToken.trim();
-    if (!t) return;
+    if (!t) {
+      setTokenState({ kind: "invalid", title: "Token vide", detail: "Collez le token du badge avant de valider." });
+      return;
+    }
     await handleDecoded(t);
-    setManualToken("");
   };
 
+  const formatLooksValid = BADGE_RE.test(manualToken.trim());
   const okCount = logs.filter((l) => l.status === "ok").length;
 
   return (
