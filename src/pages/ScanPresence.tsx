@@ -195,6 +195,7 @@ export default function ScanPresence() {
         detail: `Badge valide • ${date} • ${activite}`,
       });
       pushLog({ name: membre.nom_complet, status: "ok" });
+      setManualToken("");
     } catch (e) {
       const detail = (e as Error).message || "Erreur réseau pendant la vérification du badge.";
       setTokenState({ kind: "invalid", title: "Vérification impossible", detail });
