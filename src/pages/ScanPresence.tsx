@@ -168,16 +168,29 @@ export default function ScanPresence() {
         return;
       }
 
+      if (!membre.service_id) {
+        const detail = "Ce membre n'est affecté à aucun service : affectez-le avant d'enregistrer sa présence.";
+        setTokenState({ kind: "invalid", title: "Service manquant", detail });
+        pushLog({ name: membre.nom_complet, status: "error", message: detail });
+        return;
+      }
+
+      const { data: auth } = await supabase.auth.getUser();
+
       const payload = {
         membre_id: membre.id,
         date_presence: date,
         type_activite: activite,
         est_present: true,
         service_id: membre.service_id,
+        marked_by: auth.user?.id ?? null,
       };
 
       const { error: upErr } = existing
-        ? await supabase.from("presences").update({ est_present: true }).eq("id", existing.id)
+        ? await supabase
+            .from("presences")
+            .update({ est_present: true, marked_by: auth.user?.id ?? null })
+            .eq("id", existing.id)
         : await supabase.from("presences").insert(payload);
 
       if (upErr) {
@@ -188,6 +201,7 @@ export default function ScanPresence() {
         pushLog({ name: membre.nom_complet, status: "error", message: detail });
         return;
       }
+
 
       setTokenState({
         kind: "valid",
