@@ -281,15 +281,66 @@ export default function ScanPresence() {
                   <div className="flex gap-2 mt-1">
                     <Input
                       value={manualToken}
-                      onChange={(e) => setManualToken(e.target.value)}
+                      onChange={(e) => {
+                        setManualToken(e.target.value);
+                        setTokenState({ kind: "idle" });
+                      }}
                       placeholder="BADGE.v1...."
+                      aria-invalid={tokenState.kind === "invalid"}
+                      className={cn(
+                        tokenState.kind === "invalid" && "border-destructive focus-visible:ring-destructive"
+                      )}
                       onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
                     />
-                    <Button type="button" onClick={handleManualSubmit} disabled={!manualToken.trim()}>
-                      <Send className="w-4 h-4" />
+                    <Button
+                      type="button"
+                      onClick={handleManualSubmit}
+                      disabled={!manualToken.trim() || tokenState.kind === "checking"}
+                    >
+                      {tokenState.kind === "checking" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
+                  {manualToken.trim() && !formatLooksValid && tokenState.kind === "idle" && (
+                    <p className="text-xs text-amber-600 mt-1.5">
+                      Format attendu : BADGE.v1.&lt;payload&gt;.&lt;signature&gt;
+                    </p>
+                  )}
+
+                  {tokenState.kind === "checking" && (
+                    <div className="mt-3 flex items-center gap-2 p-3 rounded-md border bg-muted/40 text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-muted-foreground">Vérification du token (signature et expiration)…</span>
+                    </div>
+                  )}
+
+                  {tokenState.kind === "invalid" && (
+                    <div className="mt-3 flex items-start gap-2 p-3 rounded-md border border-destructive/30 bg-destructive/5">
+                      <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-destructive">{tokenState.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{tokenState.detail}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Aucune présence n'a été enregistrée.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {tokenState.kind === "valid" && (
+                    <div className="mt-3 flex items-start gap-2 p-3 rounded-md border border-success/30 bg-success/5">
+                      <CheckCircle2 className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">{tokenState.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{tokenState.detail}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
 
               </CardContent>
             </Card>
