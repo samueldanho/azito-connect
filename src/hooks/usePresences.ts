@@ -54,6 +54,9 @@ export const usePresences = (date: string, typeActivite: TypeActivite, serviceId
 
   const markPresence = useMutation({
     mutationFn: async (presence: PresenceInsert) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth.user?.id ?? null;
+
       // Check if presence already exists for this member/date/activity
       const { data: existing } = await supabase
         .from("presences")
@@ -67,7 +70,7 @@ export const usePresences = (date: string, typeActivite: TypeActivite, serviceId
         // Update existing
         const { data, error } = await supabase
           .from("presences")
-          .update({ est_present: presence.est_present })
+          .update({ est_present: presence.est_present, marked_by: userId })
           .eq("id", existing.id)
           .select()
           .single();
@@ -77,7 +80,7 @@ export const usePresences = (date: string, typeActivite: TypeActivite, serviceId
         // Insert new
         const { data, error } = await supabase
           .from("presences")
-          .insert(presence)
+          .insert({ ...presence, marked_by: presence.marked_by ?? userId })
           .select()
           .single();
         if (error) throw error;
@@ -98,13 +101,19 @@ export const usePresences = (date: string, typeActivite: TypeActivite, serviceId
 
   const bulkMarkPresence = useMutation({
     mutationFn: async (presences: PresenceInsert[]) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth.user?.id ?? null;
+
       // Use upsert with conflict resolution
       const { data, error } = await supabase
         .from("presences")
-        .upsert(presences, {
-          onConflict: "membre_id,date_presence,type_activite",
-          ignoreDuplicates: false,
-        })
+        .upsert(
+          presences.map((p) => ({ ...p, marked_by: p.marked_by ?? userId })),
+          {
+            onConflict: "membre_id,date_presence,type_activite",
+            ignoreDuplicates: false,
+          }
+        )
         .select();
       
       if (error) throw error;
