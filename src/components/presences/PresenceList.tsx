@@ -121,20 +121,18 @@ export const PresenceList = ({
     const skipped = filteredMembers.length - saveable.length;
 
     if (saveable.length === 0) {
-      toast({
-        title: "Aucun membre enregistrable",
+      toast.error("Aucun membre enregistrable", {
         description: "Ces membres ne sont affectés à aucun service. Affectez-les d'abord.",
-        variant: "destructive",
       });
       return;
     }
 
     if (skipped > 0) {
-      toast({
-        title: `${skipped} membre${skipped > 1 ? "s" : ""} ignoré${skipped > 1 ? "s" : ""}`,
+      toast(`${skipped} membre${skipped > 1 ? "s" : ""} ignoré${skipped > 1 ? "s" : ""}`, {
         description: "Membres sans service affecté — leur présence n'a pas été enregistrée.",
       });
     }
+
 
     const presencesToSave: PresenceInsert[] = saveable.map((member) => ({
       membre_id: member.id,
