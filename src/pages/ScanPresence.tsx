@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, CheckCircle2, XCircle, Send } from "lucide-react";
+import { QrCode, CheckCircle2, XCircle, Send, Loader2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TypeActivite } from "@/hooks/usePresences";
 import { useToast } from "@/hooks/use-toast";
