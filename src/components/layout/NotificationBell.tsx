@@ -13,9 +13,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export type Notif = Tables<"notifications">;
+type Notif = Tables<"notifications">;
 
-const NotificationBell = () => {
+export const NotificationBell = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
