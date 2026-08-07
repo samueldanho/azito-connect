@@ -16,6 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import QRCodeShare from "@/components/shared/QRCodeShare";
+import { Tables } from "@/integrations/supabase/types";
+
+type BusEntry = Tables<"bus_center">;
+type BusZone = Tables<"bus_center_zones">;
 
 const BusCenterDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -114,7 +118,7 @@ const BusCenterDashboard = () => {
     addZoneMutation.mutate(newZoneName.trim());
   };
 
-  const filtered = entries.filter((e: any) => {
+  const filtered = entries.filter((e: BusEntry) => {
     const matchesSearch = `${e.nom} ${e.prenom}`.toLowerCase().includes(search.toLowerCase());
     const matchesZone =
       zoneFilter === "all"
@@ -125,8 +129,8 @@ const BusCenterDashboard = () => {
     return matchesSearch && matchesZone;
   });
 
-  const totalAnciens = filtered.reduce((s: number, e: any) => s + (e.nombre_anciens || 0), 0);
-  const totalNouveaux = filtered.reduce((s: number, e: any) => s + (e.nombre_nouveaux || 0), 0);
+  const totalAnciens = filtered.reduce((s: number, e: BusEntry) => s + (e.nombre_anciens || 0), 0);
+  const totalNouveaux = filtered.reduce((s: number, e: BusEntry) => s + (e.nombre_nouveaux || 0), 0);
 
   const formUrl = `${window.location.origin}/bus-center`;
 
@@ -173,7 +177,7 @@ const BusCenterDashboard = () => {
                       {zones.length === 0 ? (
                         <p className="text-sm text-muted-foreground text-center py-4">Aucune zone créée</p>
                       ) : (
-                        zones.map((z: any) => (
+                        zones.map((z: BusZone) => (
                           <div key={z.id} className="flex items-center justify-between p-2 rounded-md border border-border">
                             <span className="text-sm text-foreground">{z.nom}</span>
                             <Button
@@ -262,7 +266,7 @@ const BusCenterDashboard = () => {
                     <SelectContent>
                       <SelectItem value="all">Toutes les zones</SelectItem>
                       <SelectItem value="none">Sans zone</SelectItem>
-                      {zones.map((z: any) => (
+                      {zones.map((z: BusZone) => (
                         <SelectItem key={z.id} value={z.id}>{z.nom}</SelectItem>
                       ))}
                     </SelectContent>
@@ -294,7 +298,7 @@ const BusCenterDashboard = () => {
                       <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Aucune entrée</TableCell>
                     </TableRow>
                   ) : (
-                    filtered.map((e: any) => (
+                    filtered.map((e: BusEntry) => (
                       <TableRow key={e.id}>
                         <TableCell className="font-medium">{e.nom}</TableCell>
                         <TableCell>{e.prenom}</TableCell>
