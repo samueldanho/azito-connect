@@ -45,10 +45,10 @@ export const MemberQRDialog = ({ member, open, onOpenChange }: MemberQRDialogPro
       if (!data?.token) throw new Error("Token manquant");
       setToken(data.token);
       setExp(data.exp);
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Impossible de générer le badge",
-        description: e?.message ?? "Erreur inconnue",
+        description: (e instanceof Error ? e.message : null) ?? "Erreur inconnue",
         variant: "destructive",
       });
     } finally {

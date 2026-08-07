@@ -75,8 +75,8 @@ const BusCenter = () => {
       if (response.data?.error) throw new Error(response.data.error);
 
       setIsSuccess(true);
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Impossible d'enregistrer", variant: "destructive" });
+    } catch (err) {
+      toast({ title: "Erreur", description: (err instanceof Error ? err.message : "") || "Impossible d'enregistrer", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }

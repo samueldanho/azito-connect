@@ -53,8 +53,8 @@ const Register = () => {
       if (response.data?.error) throw new Error(response.data.error);
 
       setIsSuccess(true);
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Impossible de s'inscrire", variant: "destructive" });
+    } catch (err) {
+      toast({ title: "Erreur", description: (err instanceof Error ? err.message : "") || "Impossible de s'inscrire", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
