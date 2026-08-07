@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export const NotificationBell = () => {
+export type Notif = Tables<"notifications">;
+
+const NotificationBell = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -30,7 +33,7 @@ export const NotificationBell = () => {
     refetchInterval: 30000, // Poll every 30s
   });
 
-  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
+  const unreadCount = notifications.filter((n: Notif) => !n.is_read).length;
 
   const markAsRead = useMutation({
     mutationFn: async (id: string) => {
@@ -88,7 +91,7 @@ export const NotificationBell = () => {
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {notifications.map((n: any) => (
+              {notifications.map((n: Notif) => (
                 <button
                   key={n.id}
                   className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${
