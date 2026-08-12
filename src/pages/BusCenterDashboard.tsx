@@ -53,7 +53,7 @@ const BusCenterDashboard = () => {
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
-      return data;
+      return (data ?? []) as (BusEntry & { bus_center_zones: { nom: string } | null })[];
     },
   });
 
