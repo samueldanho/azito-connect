@@ -53,7 +53,7 @@ const BusCenterDashboard = () => {
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
-      return data;
+      return (data ?? []) as (BusEntry & { bus_center_zones: { nom: string } | null })[];
     },
   });
 
@@ -298,7 +298,7 @@ const BusCenterDashboard = () => {
                       <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Aucune entrée</TableCell>
                     </TableRow>
                   ) : (
-                    filtered.map((e: BusEntry) => (
+                    filtered.map((e) => (
                       <TableRow key={e.id}>
                         <TableCell className="font-medium">{e.nom}</TableCell>
                         <TableCell>{e.prenom}</TableCell>
